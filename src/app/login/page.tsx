@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { BookOpenCheck, ArrowRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
@@ -17,6 +18,8 @@ import { Label } from '@/components/ui/label';
 
 export default function LoginPage() {
   const router = useRouter();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
   const handleLogin = (event: React.FormEvent) => {
     event.preventDefault();
@@ -54,11 +57,19 @@ export default function LoginPage() {
                   type="email"
                   placeholder="teacher@school.edu"
                   required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                 />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
-                <Input id="password" type="password" required />
+                <Input
+                  id="password"
+                  type="password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
               </div>
             </CardContent>
             <CardFooter className="flex flex-col gap-4">
