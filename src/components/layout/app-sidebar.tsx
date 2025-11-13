@@ -25,7 +25,7 @@ export function AppSidebar() {
   return (
     <aside className="flex h-full flex-col border-r bg-card">
       <div className="flex h-16 items-center border-b px-6">
-        <Link href="/dashboard" className="flex items-center gap-2 font-semibold font-headline text-lg">
+        <Link href="/" className="flex items-center gap-2 font-semibold font-headline text-lg">
           <BookOpenCheck className="h-6 w-6 text-primary" />
           <span>EduInsights Pro</span>
         </Link>

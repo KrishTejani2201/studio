@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { BookOpenCheck, ArrowRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -31,9 +32,9 @@ export default function LoginPage() {
     <main className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
       <div className="w-full max-w-md">
         <div className="mb-8 flex flex-col items-center text-center">
-          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary">
+          <Link href="/" className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary">
             <BookOpenCheck className="h-8 w-8" />
-          </div>
+          </Link>
           <h1 className="font-headline text-4xl font-bold text-foreground">
             EduInsights Pro
           </h1>
