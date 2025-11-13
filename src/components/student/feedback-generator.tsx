@@ -21,6 +21,8 @@ import { useToast } from '@/hooks/use-toast';
 
 type FeedbackFormInputs = {
   tone: 'positive' | 'neutral' | 'constructive';
+  strengths: string;
+  areasForImprovement: string;
 };
 
 type FeedbackGeneratorProps = {
@@ -35,6 +37,8 @@ export function FeedbackGenerator({ student }: FeedbackGeneratorProps) {
   const { register, handleSubmit, watch, setValue } = useForm<FeedbackFormInputs>({
     defaultValues: {
       tone: 'constructive',
+      strengths: 'Shows potential in creative tasks.',
+      areasForImprovement: 'Needs to focus on assignment submission deadlines.',
     },
   });
   const selectedTone = watch('tone');
@@ -47,8 +51,8 @@ export function FeedbackGenerator({ student }: FeedbackGeneratorProps) {
       studentName: student.name,
       subject: 'Overall Performance',
       performanceSummary: `Average score of ${student.averageScore} and attendance of ${student.attendance}%.`,
-      strengths: 'Shows potential in creative tasks.', // Placeholder
-      areasForImprovement: 'Needs to focus on assignment submission deadlines.', // Placeholder
+      strengths: data.strengths,
+      areasForImprovement: data.areasForImprovement,
       teacherName: 'Ms. Davison', // Placeholder
       tone: data.tone,
     };
@@ -78,6 +82,27 @@ export function FeedbackGenerator({ student }: FeedbackGeneratorProps) {
       </CardHeader>
       <CardContent className="space-y-4">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+                <Label htmlFor="strengths">Strengths</Label>
+                <Textarea
+                    id="strengths"
+                    {...register('strengths')}
+                    placeholder="e.g., Excellent participation in class discussions."
+                    rows={3}
+                />
+            </div>
+            <div className="space-y-2">
+                <Label htmlFor="areasForImprovement">Areas for Improvement</Label>
+                <Textarea
+                    id="areasForImprovement"
+                    {...register('areasForImprovement')}
+                    placeholder="e.g., Submitting homework on time."
+                    rows={3}
+                />
+            </div>
+          </div>
+
           <div>
             <Label htmlFor="tone-select">Select Feedback Tone</Label>
             <Select
