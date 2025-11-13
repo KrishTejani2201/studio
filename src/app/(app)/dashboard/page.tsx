@@ -6,6 +6,7 @@ import { RiskDistributionChart } from '@/components/dashboard/risk-distribution-
 export default function DashboardPage() {
   return (
     <div className="space-y-6">
+      <h1 className="font-headline text-3xl font-bold">Teacher Dashboard</h1>
       <StatsCards students={students} />
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">
