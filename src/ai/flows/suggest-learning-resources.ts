@@ -55,7 +55,7 @@ const prompt = ai.definePrompt({
   - Grade Level: {{gradeLevel}}
   - Difficulty: {{difficulty}}
 
-  Suggest a mix of resource types if possible (e.g., a video, an article, an online quiz). Prioritize well-known sources like Khan Academy, YouTube, educational blogs, etc.`,
+  Suggest a mix of resource types if possible (e.g., a video, an article, an online quiz). Prioritize well-known sources like Khan Academy, YouTube, educational blogs, etc. Ensure all provided URLs are active and lead directly to the content.`,
 });
 
 const suggestLearningResourcesFlow = ai.defineFlow(
