@@ -23,7 +23,7 @@ const predictPerformancePrompt = ai.definePrompt({
   name: 'predictStudentPerformancePrompt',
   input: { schema: PredictStudentPerformanceInputSchema },
   output: { schema: PredictStudentPerformanceOutputSchema },
-  prompt: `You are an expert AI educational analyst. Your task is to predict a student's academic risk level based on the following data.
+  prompt: `You are an expert AI educational analyst. Your task is to predict a student's academic risk level (Low, Medium, or High) based on the following data.
 
 Student Data:
 - Current Overall Grade: {{currentGrade}}%
@@ -32,13 +32,9 @@ Student Data:
 - Class Participation: {{classParticipation}}
 - Most Recent Test Score: {{recentTestScore}}%
 
-Analyze these factors to determine if the student is at Low, Medium, or High risk of academic failure.
+Analyze these factors to determine the student's risk of academic failure.
 
-- **High Risk:** Typically associated with very low scores (below 65), poor attendance (below 80%), and low homework completion.
-- **Medium Risk:** May have inconsistent scores, attendance around 80-90%, or dropping performance.
-- **Low Risk:** Consistently high scores (above 85%), excellent attendance, and high engagement.
-
-Provide a \`riskLevel\`, a \`confidenceScore\` representing the probability of failure (e.g., High risk with 75% attendance might be a 0.65 score), and a brief \`predictionReasoning\`.`,
+Provide a 'riskLevel', a 'confidenceScore' representing the probability of failure (where a higher score indicates higher risk), and a brief 'predictionReasoning' explaining your conclusion.`,
 });
 
 const predictStudentPerformanceFlow = ai.defineFlow(
