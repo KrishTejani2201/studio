@@ -1,11 +1,11 @@
-"use server";
+'use server';
 
-import { generateParentFeedback } from "@/ai/flows/generate-parent-feedback";
-import type { GenerateParentFeedbackInput } from "@/ai/flows/generate-parent-feedback";
-import { suggestLearningResources } from "@/ai/flows/suggest-learning-resources";
-import type { SuggestLearningResourcesInput } from "@/ai/flows/suggest-learning-resources";
-import { predictStudentPerformance } from "@/ai/flows/predict-student-performance";
-import type { PredictStudentPerformanceInput } from "@/ai/flows/predict-student-performance";
+import { generateParentFeedback } from '@/ai/flows/generate-parent-feedback';
+import type { GenerateParentFeedbackInput } from '@/ai/flows/generate-parent-feedback';
+import { suggestLearningResources } from '@/ai/flows/suggest-learning-resources';
+import type { SuggestLearningResourcesInput } from '@/ai/flows/suggest-learning-resources';
+import { predictStudentPerformance } from '@/ai/flows/predict-student-performance';
+import type { PredictStudentPerformanceInput } from '@/ai/flows/predict-student-performance';
 
 export async function generateParentFeedbackAction(
   input: GenerateParentFeedbackInput
@@ -15,7 +15,7 @@ export async function generateParentFeedbackAction(
     return { success: true, data: result };
   } catch (error) {
     console.error(error);
-    return { success: false, error: "Failed to generate feedback." };
+    return { success: false, error: 'Failed to generate feedback.' };
   }
 }
 
@@ -27,7 +27,7 @@ export async function suggestLearningResourcesAction(
     return { success: true, data: result };
   } catch (error) {
     console.error(error);
-    return { success: false, error: "Failed to suggest resources." };
+    return { success: false, error: 'Failed to suggest resources.' };
   }
 }
 
@@ -39,6 +39,6 @@ export async function predictStudentPerformanceAction(
     return { success: true, data: result };
   } catch (error) {
     console.error(error);
-    return { success: false, error: "Failed to predict performance." };
+    return { success: false, error: 'Failed to predict performance.' };
   }
 }
