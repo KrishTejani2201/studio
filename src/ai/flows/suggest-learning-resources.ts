@@ -20,14 +20,23 @@ export type SuggestLearningResourcesInput = z.infer<
   typeof SuggestLearningResourcesInputSchema
 >;
 
+const ResourceSchema = z.object({
+  title: z.string().describe('The title of the learning resource.'),
+  description: z.string().describe('A brief, one-sentence description of the resource.'),
+  url: z.string().url().describe('A direct, publicly accessible URL to the resource.'),
+});
+
 const SuggestLearningResourcesOutputSchema = z.object({
   resourceRecommendations: z
-    .array(z.string())
-    .describe('A list of 3-5 recommended learning resource titles. These can be names of videos, articles, or interactive exercises.'),
+    .array(ResourceSchema)
+    .describe('A list of 3-5 recommended learning resources.'),
 });
 export type SuggestLearningResourcesOutput = z.infer<
   typeof SuggestLearningResourcesOutputSchema
 >;
+// To be used in the component
+export type LearningResource = z.infer<typeof ResourceSchema>;
+
 
 export async function suggestLearningResources(
   input: SuggestLearningResourcesInput
@@ -39,14 +48,14 @@ const prompt = ai.definePrompt({
   name: 'suggestLearningResourcesPrompt',
   input: {schema: SuggestLearningResourcesInputSchema},
   output: {schema: SuggestLearningResourcesOutputSchema},
-  prompt: `You are an expert AI curriculum developer. Your task is to recommend relevant and effective learning resources.
+  prompt: `You are an expert AI curriculum developer. Your task is to recommend relevant and effective learning resources with valid, publicly accessible URLs.
 
-  Based on the following criteria, please generate a list of 3-5 resource titles:
+  Based on the following criteria, please generate a list of 3-5 resources. For each resource, provide a title, a short description, and a direct URL.
   - Topic: {{topic}}
   - Grade Level: {{gradeLevel}}
   - Difficulty: {{difficulty}}
 
-  Suggest a mix of resource types if possible (e.g., a video title, an article title, an online quiz name).`,
+  Suggest a mix of resource types if possible (e.g., a video, an article, an online quiz). Prioritize well-known sources like Khan Academy, YouTube, educational blogs, etc.`,
 });
 
 const suggestLearningResourcesFlow = ai.defineFlow(

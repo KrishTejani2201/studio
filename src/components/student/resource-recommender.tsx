@@ -6,6 +6,7 @@ import { useForm, SubmitHandler } from 'react-hook-form';
 
 import { suggestLearningResourcesAction } from '@/lib/actions';
 import type { Student } from '@/lib/types';
+import type { LearningResource } from '@/ai/flows/suggest-learning-resources';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -22,7 +23,7 @@ type ResourceRecommenderProps = {
 };
 
 export function ResourceRecommender({ student }: ResourceRecommenderProps) {
-  const [recommendations, setRecommendations] = useState<string[]>([]);
+  const [recommendations, setRecommendations] = useState<LearningResource[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
@@ -86,16 +87,19 @@ export function ResourceRecommender({ student }: ResourceRecommenderProps) {
             {isLoading ? (
                 <div className="space-y-3">
                    {[...Array(3)].map((_, i) => (
-                     <div key={i} className="h-8 w-full animate-pulse rounded-md bg-muted"></div>
+                     <div key={i} className="h-10 w-full animate-pulse rounded-md bg-muted"></div>
                    ))}
                 </div>
             ) : (
                 <ul className="space-y-2">
                 {recommendations.map((rec, index) => (
                     <li key={index} className="flex items-center justify-between rounded-md border p-3">
-                        <span className="font-medium">{rec}</span>
+                        <div className="flex-1 pr-4">
+                            <p className="font-medium">{rec.title}</p>
+                            <p className="text-sm text-muted-foreground">{rec.description}</p>
+                        </div>
                         <Button asChild variant="ghost" size="sm">
-                            <Link href="#">View</Link>
+                            <Link href={rec.url} target="_blank" rel="noopener noreferrer">View</Link>
                         </Button>
                     </li>
                 ))}
