@@ -2,7 +2,6 @@ import { students } from '@/lib/data';
 import { StatsCards } from '@/components/dashboard/stats-cards';
 import { StudentsTable } from '@/components/dashboard/students-table';
 import { RiskDistributionChart } from '@/components/dashboard/risk-distribution-chart';
-import { PerformanceForecasting } from '@/components/dashboard/performance-forecasting';
 
 export default function DashboardPage() {
   return (
@@ -15,7 +14,6 @@ export default function DashboardPage() {
         </div>
         <div className="flex flex-col gap-6 lg:col-span-1">
           <RiskDistributionChart students={students} />
-          <PerformanceForecasting />
         </div>
       </div>
     </div>

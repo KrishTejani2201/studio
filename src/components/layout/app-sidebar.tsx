@@ -6,6 +6,7 @@ import {
   Settings,
   Users,
   Upload,
+  Lightbulb,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -16,6 +17,7 @@ import { Button } from '../ui/button';
 const navItems = [
   { href: '/dashboard', icon: Home, label: 'Dashboard' },
   { href: '/students', icon: Users, label: 'Students' },
+  { href: '/forecasting', icon: Lightbulb, label: 'Forecasting' },
   { href: '/upload', icon: Upload, label: 'Upload Data' },
 ];
 
