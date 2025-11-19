@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gantt Chart</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js"></script>
+    <style>
+        canvas {
+            max-width: 600px;
+            margin: auto;
+        }
+    </style>
+</head>
+<body>
+
+<h2>Project Timeline Gantt Chart</h2>
+<canvas id="ganttChart"></canvas>
+
+<script>
+    var ctx = document.getElementById('ganttChart').getContext('2d');
+    var ganttChart = new Chart(ctx, {
+        type: 'horizontalBar',
+        data: {
+            labels: ['Project Planning', 'Design Phase', 'Development Phase', 'Testing Phase', 'Deployment'],
+            datasets: [{
+                label: 'Project Timeline',
+                data: [5, 10, 15, 8, 3], // Duration of each phase
+                backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                xAxes: [{
+                    ticks: {
+                        beginAtZero: true
+                    }
+                }]
+            }
+        }
+    });
+</script>
+
+</body>
+</html>
