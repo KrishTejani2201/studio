@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useForm, SubmitHandler } from 'react-hook-form';
+import { useForm, SubmitHandler, Controller } from 'react-hook-form';
 import { Loader2, Sparkles } from 'lucide-react';
 
 import { predictStudentPerformanceAction } from '@/lib/actions';
@@ -72,25 +72,25 @@ export function PerformanceForecasting() {
                 <Input
                   id="currentGrade"
                   type="number"
-                  {...register('currentGrade', { required: true, min: 0, max: 100 })}
+                  {...register('currentGrade', { required: true, min: 0, max: 100, valueAsNumber: true })}
                 />
-                 {errors.currentGrade && <p className="text-destructive text-xs">Please enter a grade between 0 and 100.</p>}
+                {errors.currentGrade && <p className="text-destructive text-xs">Please enter a grade between 0 and 100.</p>}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="attendancePercentage">Attendance (%)</Label>
                 <Input
                   id="attendancePercentage"
                   type="number"
-                  {...register('attendancePercentage', { required: true, min: 0, max: 100 })}
+                  {...register('attendancePercentage', { required: true, min: 0, max: 100, valueAsNumber: true })}
                 />
                 {errors.attendancePercentage && <p className="text-destructive text-xs">Please enter a percentage between 0 and 100.</p>}
               </div>
-               <div className="space-y-2">
+              <div className="space-y-2">
                 <Label htmlFor="homeworkCompletionRate">Homework Completion (%)</Label>
                 <Input
                   id="homeworkCompletionRate"
                   type="number"
-                  {...register('homeworkCompletionRate', { required: true, min: 0, max: 100 })}
+                  {...register('homeworkCompletionRate', { required: true, min: 0, max: 100, valueAsNumber: true })}
                 />
                 {errors.homeworkCompletionRate && <p className="text-destructive text-xs">Please enter a percentage between 0 and 100.</p>}
               </div>
@@ -99,7 +99,7 @@ export function PerformanceForecasting() {
                 <Input
                   id="recentTestScore"
                   type="number"
-                  {...register('recentTestScore', { required: true, min: 0, max: 100 })}
+                  {...register('recentTestScore', { required: true, min: 0, max: 100, valueAsNumber: true })}
                 />
                 {errors.recentTestScore && <p className="text-destructive text-xs">Please enter a score between 0 and 100.</p>}
               </div>
@@ -107,17 +107,24 @@ export function PerformanceForecasting() {
 
             <div className="space-y-2">
               <Label htmlFor="class-participation">Class Participation</Label>
-               <Select onValueChange={(value) => control.setValue('classParticipation', value)} name="classParticipation">
-                  <SelectTrigger id="class-participation">
-                    <SelectValue placeholder="Select participation level" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="High">High</SelectItem>
-                    <SelectItem value="Medium">Medium</SelectItem>
-                    <SelectItem value="Low">Low</SelectItem>
-                  </SelectContent>
-                </Select>
-                 {errors.classParticipation && <p className="text-destructive text-xs">Please select a participation level.</p>}
+              <Controller
+                name="classParticipation"
+                control={control}
+                rules={{ required: 'Please select a participation level.' }}
+                render={({ field }) => (
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <SelectTrigger id="class-participation">
+                      <SelectValue placeholder="Select participation level" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="High">High</SelectItem>
+                      <SelectItem value="Medium">Medium</SelectItem>
+                      <SelectItem value="Low">Low</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+              {errors.classParticipation && <p className="text-destructive text-xs">{errors.classParticipation.message}</p>}
             </div>
 
             <Button type="submit" disabled={isLoading}>
@@ -138,41 +145,41 @@ export function PerformanceForecasting() {
           <CardDescription>The AI's forecast based on the data provided.</CardDescription>
         </CardHeader>
         <CardContent className="flex-1 flex items-center justify-center">
-            {isLoading && (
-                 <div className="flex flex-col items-center justify-center gap-4 text-center">
-                    <Loader2 className="h-16 w-16 text-primary animate-spin" />
-                    <p className="text-muted-foreground">Analyzing data...</p>
-                 </div>
-            )}
-            {!isLoading && !prediction && (
-                 <div className="text-center text-muted-foreground">
-                    <p>Your prediction will appear here.</p>
-                 </div>
-            )}
-            {prediction && (
-                <div className="flex flex-col items-center justify-center gap-4 text-center">
-                    <div
-                        className={cn(
-                        'flex h-32 w-32 items-center justify-center rounded-full border-8',
-                        {
-                            'border-primary': prediction.riskLevel === 'Low',
-                            'border-accent': prediction.riskLevel === 'Medium',
-                            'border-destructive': prediction.riskLevel === 'High',
-                        }
-                        )}
-                    >
-                        <span className="text-4xl font-bold">
-                        {(prediction.confidenceScore * 100).toFixed(0)}%
-                        </span>
-                    </div>
-                    <Badge variant={riskLevelVariant[prediction.riskLevel]} className="text-lg px-4 py-1">
-                        {prediction.riskLevel} Risk
-                    </Badge>
-                     <p className="text-muted-foreground text-sm max-w-sm mt-2">
-                        {prediction.predictionReasoning}
-                    </p>
-                </div>
-            )}
+          {isLoading && (
+            <div className="flex flex-col items-center justify-center gap-4 text-center">
+              <Loader2 className="h-16 w-16 text-primary animate-spin" />
+              <p className="text-muted-foreground">Analyzing data...</p>
+            </div>
+          )}
+          {!isLoading && !prediction && (
+            <div className="text-center text-muted-foreground">
+              <p>Your prediction will appear here.</p>
+            </div>
+          )}
+          {prediction && (
+            <div className="flex flex-col items-center justify-center gap-4 text-center">
+              <div
+                className={cn(
+                  'flex h-32 w-32 items-center justify-center rounded-full border-8',
+                  {
+                    'border-primary': prediction.riskLevel === 'Low',
+                    'border-accent': prediction.riskLevel === 'Medium',
+                    'border-destructive': prediction.riskLevel === 'High',
+                  }
+                )}
+              >
+                <span className="text-4xl font-bold">
+                  {(prediction.confidenceScore * 100).toFixed(0)}%
+                </span>
+              </div>
+              <Badge variant={riskLevelVariant[prediction.riskLevel]} className="text-lg px-4 py-1">
+                {prediction.riskLevel} Risk
+              </Badge>
+              <p className="text-muted-foreground text-sm max-w-sm mt-2">
+                {prediction.predictionReasoning}
+              </p>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
