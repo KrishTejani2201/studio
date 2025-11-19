@@ -11,7 +11,6 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Badge } from '../ui/badge';
 import Link from 'next/link';
 
 type ResourceFormInputs = {
@@ -34,10 +33,9 @@ export function ResourceRecommender({ student }: ResourceRecommenderProps) {
     setRecommendations([]);
 
     const input = {
-      studentId: student.id,
       topic: data.topic,
       gradeLevel: student.grade.toString(),
-      difficulty: 'Medium', // Placeholder
+      difficulty: 'Intermediate', // Placeholder
     };
 
     const result = await suggestLearningResourcesAction(input);

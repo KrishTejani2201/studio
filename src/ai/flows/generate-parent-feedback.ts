@@ -25,7 +25,7 @@ const GenerateParentFeedbackInputSchema = z.object({
   teacherName: z.string().describe('The name of the teacher providing feedback.'),
   tone: z
     .enum(['positive', 'neutral', 'constructive'])
-    .describe('The tone of the feedback.'),
+    .describe('The desired tone of the feedback.'),
 });
 
 export type GenerateParentFeedbackInput = z.infer<
@@ -33,7 +33,7 @@ export type GenerateParentFeedbackInput = z.infer<
 >;
 
 const GenerateParentFeedbackOutputSchema = z.object({
-  feedback: z.string().describe('The generated parent feedback.'),
+  feedback: z.string().describe('The generated parent feedback text.'),
 });
 
 export type GenerateParentFeedbackOutput = z.infer<
@@ -50,15 +50,16 @@ const generateParentFeedbackPrompt = ai.definePrompt({
   name: 'generateParentFeedbackPrompt',
   input: {schema: GenerateParentFeedbackInputSchema},
   output: {schema: GenerateParentFeedbackOutputSchema},
-  prompt: `You are an experienced teacher named {{teacherName}} providing feedback to parents about their child's performance in {{subject}}. Please generate personalized feedback based on the following information, using a {{tone}} tone:
+  prompt: `You are an experienced teacher named {{teacherName}}. Your task is to write a personalized feedback message for a parent about their child, {{studentName}}. The feedback should be for the subject: {{subject}}.
 
-Student Name: {{studentName}}
-Subject: {{subject}}
-Performance Summary: {{performanceSummary}}
-Strengths: {{strengths}}
-Areas for Improvement: {{areasForImprovement}}
+Use a {{tone}} tone for the message.
 
-Feedback:`,
+Incorporate the following details into the feedback:
+- Performance Summary: {{performanceSummary}}
+- Key Strengths: {{strengths}}
+- Areas for Improvement: {{areasForImprovement}}
+
+Write a clear, concise, and helpful message. Address the parent directly.`,
 });
 
 const generateParentFeedbackFlow = ai.defineFlow(

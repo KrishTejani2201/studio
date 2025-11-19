@@ -12,10 +12,9 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const SuggestLearningResourcesInputSchema = z.object({
-  studentId: z.string().describe('The ID of the student.'),
-  topic: z.string().describe('The topic for which learning resources are needed.'),
-  gradeLevel: z.string().describe('The grade level of the student.'),
-  difficulty: z.string().describe('The difficulty level of the resources.'),
+  topic: z.string().describe('The academic topic for which learning resources are needed (e.g., "Algebraic Equations", "The Water Cycle").'),
+  gradeLevel: z.string().describe('The student\'s grade level (e.g., "5", "10").'),
+  difficulty: z.enum(['Beginner', 'Intermediate', 'Advanced']).describe('The desired difficulty level of the resources.'),
 });
 export type SuggestLearningResourcesInput = z.infer<
   typeof SuggestLearningResourcesInputSchema
@@ -24,7 +23,7 @@ export type SuggestLearningResourcesInput = z.infer<
 const SuggestLearningResourcesOutputSchema = z.object({
   resourceRecommendations: z
     .array(z.string())
-    .describe('A list of recommended learning resources.'),
+    .describe('A list of 3-5 recommended learning resource titles. These can be names of videos, articles, or interactive exercises.'),
 });
 export type SuggestLearningResourcesOutput = z.infer<
   typeof SuggestLearningResourcesOutputSchema
@@ -40,11 +39,14 @@ const prompt = ai.definePrompt({
   name: 'suggestLearningResourcesPrompt',
   input: {schema: SuggestLearningResourcesInputSchema},
   output: {schema: SuggestLearningResourcesOutputSchema},
-  prompt: `You are an AI learning resource recommender.
+  prompt: `You are an expert AI curriculum developer. Your task is to recommend relevant and effective learning resources.
 
-  Based on the student's ID: {{{studentId}}}, the topic: {{{topic}}}, the grade level: {{{gradeLevel}}}, and the difficulty: {{{difficulty}}}, recommend a list of relevant learning resources.
-  Return a list of resource names that are appropriate for the provided input.
-  `, // Ensure proper Handlebars syntax
+  Based on the following criteria, please generate a list of 3-5 resource titles:
+  - Topic: {{topic}}
+  - Grade Level: {{gradeLevel}}
+  - Difficulty: {{difficulty}}
+
+  Suggest a mix of resource types if possible (e.g., a video title, an article title, an online quiz name).`,
 });
 
 const suggestLearningResourcesFlow = ai.defineFlow(
