@@ -48,14 +48,26 @@ const prompt = ai.definePrompt({
   name: 'suggestLearningResourcesPrompt',
   input: {schema: SuggestLearningResourcesInputSchema},
   output: {schema: SuggestLearningResourcesOutputSchema},
-  prompt: `You are an expert AI curriculum developer. Your task is to recommend relevant and effective learning resources with valid, publicly accessible URLs.
+  prompt: `You are an expert AI curriculum developer. Your task is to recommend relevant and effective learning resources.
 
-  Based on the following criteria, please generate a list of 3-5 resources. For each resource, provide a title, a short description, and a direct URL.
-  - Topic: {{topic}}
-  - Grade Level: {{gradeLevel}}
-  - Difficulty: {{difficulty}}
+Based on the following criteria, generate a list of 3-5 resources.
+- Topic: {{topic}}
+- Grade Level: {{gradeLevel}}
+- Difficulty: {{difficulty}}
 
-  Suggest a mix of resource types if possible (e.g., a video, an article, an online quiz). Prioritize well-known sources like Khan Academy, YouTube, educational blogs, etc. Ensure all provided URLs are active and lead directly to the content.`,
+For each resource, you MUST provide a title, a short description, and a valid, publicly-accessible URL. Prioritize well-known sources like Khan Academy, YouTube, educational blogs, etc. Ensure all provided URLs are active and lead directly to the content.
+
+Here is an example of a good response for a request about "Fractions":
+{
+  "resourceRecommendations": [
+    {
+      "title": "Fractions intro | Khan Academy",
+      "description": "A video introduction to what fractions are and how they are represented.",
+      "url": "https://www.khanacademy.org/math/arithmetic/fraction-arithmetic/arith-review-fractions-intro/v/fraction-basics"
+    }
+  ]
+}
+`,
 });
 
 const suggestLearningResourcesFlow = ai.defineFlow(
