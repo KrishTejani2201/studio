@@ -10,8 +10,8 @@ type RiskDistributionChartProps = {
 
 export function RiskDistributionChart({ students }: RiskDistributionChartProps) {
   const riskData = [
-    { name: 'Low Risk', count: 0, fill: 'var(--color-primary)'},
-    { name: 'Medium Risk', count: 0, fill: 'var(--color-accent)' },
+    { name: 'Low Risk', count: 0, fill: 'var(--chart-1)'},
+    { name: 'Medium Risk', count: 0, fill: 'var(--chart-2)' },
     { name: 'High Risk', count: 0, fill: 'hsl(var(--destructive))' },
   ];
 
@@ -32,7 +32,7 @@ export function RiskDistributionChart({ students }: RiskDistributionChartProps) 
             <CardDescription>Number of students in each risk category.</CardDescription>
         </CardHeader>
         <CardContent>
-            <ResponsiveContainer width="100%" height={350}>
+            <ResponsiveContainer width="100%" height={250}>
             <BarChart data={riskData}>
                 <XAxis
                 dataKey="name"
