@@ -1,7 +1,7 @@
 'use client';
 
 import { Upload, Table, Check, ArrowRight, ArrowLeft } from 'lucide-react';
-import { useState, useContext } from 'react';
+import { useState, useContext, useEffect } from 'react';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Input } from '../ui/input';
@@ -32,9 +32,43 @@ export function UploadWizard() {
   const [fileName, setFileName] = useState('');
   const [csvData, setCsvData] = useState<CsvData | null>(null);
   const [columnMapping, setColumnMapping] = useState<Record<string, string>>({});
+  const [previewData, setPreviewData] = useState<Partial<Student>[]>([]);
+
   const { toast } = useToast();
   const { addStudents } = useStudents();
   const router = useRouter();
+
+  const isMappingComplete = requiredFields.every(field => columnMapping[field] && csvData?.headers.includes(columnMapping[field]));
+
+  const getPreviewData = (): Partial<Student>[] => {
+    if (!csvData || !isMappingComplete) return [];
+    
+    const headerIndexMap: Record<string, number> = {};
+    csvData.headers.forEach((header, index) => {
+        headerIndexMap[header] = index;
+    });
+
+    return csvData.rows.slice(0, 5).map(row => {
+        const rowData: Record<string, any> = {};
+        for (const field of requiredFields) {
+            const csvHeader = columnMapping[field];
+            const index = headerIndexMap[csvHeader];
+            let value: string | number = row[index] || '';
+            if (field === 'grade' || field === 'averageScore' || field === 'attendance') {
+                value = Number(value) || 0;
+            }
+            rowData[field] = value;
+        }
+        return rowData;
+    });
+  };
+
+  useEffect(() => {
+    if (currentStep === 3) {
+      setPreviewData(getPreviewData());
+    }
+  }, [currentStep, csvData, columnMapping]);
+
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -65,56 +99,25 @@ export function UploadWizard() {
   const handleMappingChange = (field: string, csvHeader: string) => {
     setColumnMapping(prev => ({ ...prev, [field]: csvHeader }));
   };
+
+  const handlePreviewDataChange = (rowIndex: number, field: string, value: string) => {
+    const updatedData = [...previewData];
+    const item = { ...updatedData[rowIndex] };
+    (item as any)[field] = (field === 'grade' || field === 'averageScore' || field === 'attendance') ? Number(value) : value;
+    updatedData[rowIndex] = item;
+    setPreviewData(updatedData);
+  }
   
-  const getPreviewData = (): Partial<Student>[] => {
-    if (!csvData || !isMappingComplete) return [];
-    
-    const headerIndexMap: Record<string, number> = {};
-    csvData.headers.forEach((header, index) => {
-        headerIndexMap[header] = index;
-    });
-
-    return csvData.rows.slice(0, 5).map(row => {
-        const rowData: Record<string, any> = {};
-        for (const field in columnMapping) {
-            const csvHeader = columnMapping[field];
-            const index = headerIndexMap[csvHeader];
-            let value: string | number = row[index] || '';
-            if (field === 'grade' || field === 'averageScore' || field === 'attendance') {
-                value = Number(value) || 0;
-            }
-            rowData[field] = value;
-        }
-        return rowData;
-    });
-  };
-
   const handleImport = () => {
-    if (!csvData || !isMappingComplete) return;
-
-    const headerIndexMap: Record<string, number> = {};
-    csvData.headers.forEach((header, index) => {
-        headerIndexMap[header] = index;
-    });
+    if (previewData.length === 0) return;
     
-    const newStudents: Student[] = csvData.rows.map((row, rowIndex) => {
-        const studentData: Record<string, any> = {};
-        requiredFields.forEach(field => {
-            const csvHeader = columnMapping[field];
-            const index = headerIndexMap[csvHeader];
-            let value: string | number = row[index] || '';
-             if (field === 'grade' || field === 'averageScore' || field === 'attendance') {
-                value = Number(value) || 0;
-            }
-            studentData[field] = value;
-        });
-
+    const newStudents: Student[] = previewData.map((data, rowIndex) => {
         const student: Student = {
             id: `imported-${Date.now()}-${rowIndex}`,
-            name: studentData.name,
-            grade: studentData.grade,
-            averageScore: studentData.averageScore,
-            attendance: studentData.attendance,
+            name: data.name || '',
+            grade: data.grade || 0,
+            averageScore: data.averageScore || 0,
+            attendance: data.attendance || 0,
             avatarUrl: `https://i.pravatar.cc/150?u=imported_${rowIndex}`,
             parentEmail: `parent.imported.${rowIndex}@example.com`,
             performance: [], // Default empty values
@@ -132,8 +135,6 @@ export function UploadWizard() {
     router.push('/dashboard');
   };
 
-  const isMappingComplete = requiredFields.every(field => columnMapping[field] && csvData?.headers.includes(columnMapping[field]));
-  
   const progress = (currentStep / steps.length) * 100;
 
   const goToNext = () => {
@@ -153,8 +154,6 @@ export function UploadWizard() {
   }
 
   const goToPrev = () => setCurrentStep(s => Math.max(1, s - 1));
-
-  const previewData = getPreviewData();
 
   return (
     <Card className="w-full max-w-4xl">
@@ -216,10 +215,10 @@ export function UploadWizard() {
                 </div>
             )}
 
-            {currentStep === 3 && csvData && (
+            {currentStep === 3 && (
                 <div className="space-y-4">
-                     <h3 className="text-xl font-semibold">Preview Data</h3>
-                    <p className="text-muted-foreground">Review the first few rows of your data with the applied mapping.</p>
+                     <h3 className="text-xl font-semibold">Preview & Confirm Data (Editable)</h3>
+                    <p className="text-muted-foreground">Review and edit the data before importing. Changes are saved automatically.</p>
                     <div className="rounded-md border">
                         <UiTable>
                             <TableHeader>
@@ -230,16 +229,22 @@ export function UploadWizard() {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {previewData.length > 0 && isMappingComplete ? previewData.map((row, index) => (
-                                    <TableRow key={index}>
+                                {previewData.length > 0 ? previewData.map((row, rowIndex) => (
+                                    <TableRow key={rowIndex}>
                                         {requiredFields.map(field => (
-                                            <TableCell key={field}>{(row as any)[field]}</TableCell>
+                                            <TableCell key={field}>
+                                                <Input
+                                                    value={(row as any)[field]}
+                                                    onChange={(e) => handlePreviewDataChange(rowIndex, field, e.target.value)}
+                                                    className="h-8"
+                                                />
+                                            </TableCell>
                                         ))}
                                     </TableRow>
                                 )) : (
                                     <TableRow>
                                         <TableCell colSpan={requiredFields.length} className="h-24 text-center">
-                                            No data to preview. Check your column mapping.
+                                            No data to preview. Go back and check your file upload and column mapping.
                                         </TableCell>
                                     </TableRow>
                                 )}
@@ -259,7 +264,7 @@ export function UploadWizard() {
                         Next Step <ArrowRight className="ml-2" />
                     </Button>
                 ) : (
-                    <Button onClick={handleImport} disabled={!isMappingComplete}>
+                    <Button onClick={handleImport} disabled={previewData.length === 0}>
                        <Check className="mr-2" /> Confirm & Import
                     </Button>
                 )}
