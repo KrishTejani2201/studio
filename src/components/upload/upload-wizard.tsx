@@ -76,7 +76,7 @@ export function UploadWizard() {
 
     return csvData.rows.slice(0, 5).map(row => {
         const rowData: Record<string, any> = {};
-        for (const field of requiredFields) {
+        for (const field in columnMapping) {
             const csvHeader = columnMapping[field];
             const index = headerIndexMap[csvHeader];
             let value: string | number = row[index] || '';
@@ -98,8 +98,23 @@ export function UploadWizard() {
     });
 
     const newStudents: Student[] = csvData.rows.map((row, rowIndex) => {
-        const student: Partial<Student> = {
+        const studentData: Record<string, any> = {};
+        for (const field in columnMapping) {
+            const csvHeader = columnMapping[field];
+            const index = headerIndexMap[csvHeader];
+             let value: string | number = row[index] || '';
+            if (field === 'grade' || field === 'averageScore' || field === 'attendance') {
+                value = Number(value) || 0;
+            }
+            studentData[field] = value;
+        }
+
+        const student: Student = {
             id: `imported-${Date.now()}-${rowIndex}`,
+            name: studentData.name,
+            grade: studentData.grade,
+            averageScore: studentData.averageScore,
+            attendance: studentData.attendance,
             avatarUrl: `https://i.pravatar.cc/150?u=imported_${rowIndex}`,
             parentEmail: `parent.imported.${rowIndex}@example.com`,
             performance: [], // Default empty values
@@ -109,16 +124,7 @@ export function UploadWizard() {
                 contributingFactors: [],
             },
         };
-        for (const field of requiredFields) {
-            const csvHeader = columnMapping[field];
-            const index = headerIndexMap[csvHeader];
-            let value: string | number = row[index] || '';
-            if (field === 'grade' || field === 'averageScore' || field === 'attendance') {
-                value = Number(value) || 0;
-            }
-            (student as any)[field] = value;
-        }
-        return student as Student;
+        return student;
     });
 
     addStudents(newStudents);
@@ -224,7 +230,7 @@ export function UploadWizard() {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {previewData.length > 0 ? previewData.map((row, index) => (
+                                {previewData.length > 0 && isMappingComplete ? previewData.map((row, index) => (
                                     <TableRow key={index}>
                                         {requiredFields.map(field => (
                                             <TableCell key={field}>{(row as any)[field]}</TableCell>
@@ -249,7 +255,7 @@ export function UploadWizard() {
                     <ArrowLeft className="mr-2" /> Back
                 </Button>
                 {currentStep < steps.length ? (
-                    <Button onClick={goToNext} disabled={(currentStep === 1 && !fileName)}>
+                    <Button onClick={goToNext} disabled={(currentStep === 1 && !fileName) || (currentStep === 2 && !isMappingComplete) }>
                         Next Step <ArrowRight className="ml-2" />
                     </Button>
                 ) : (
