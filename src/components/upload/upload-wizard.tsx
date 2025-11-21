@@ -96,18 +96,18 @@ export function UploadWizard() {
     csvData.headers.forEach((header, index) => {
         headerIndexMap[header] = index;
     });
-
+    
     const newStudents: Student[] = csvData.rows.map((row, rowIndex) => {
         const studentData: Record<string, any> = {};
-        for (const field in columnMapping) {
+        requiredFields.forEach(field => {
             const csvHeader = columnMapping[field];
             const index = headerIndexMap[csvHeader];
-             let value: string | number = row[index] || '';
-            if (field === 'grade' || field === 'averageScore' || field === 'attendance') {
+            let value: string | number = row[index] || '';
+             if (field === 'grade' || field === 'averageScore' || field === 'attendance') {
                 value = Number(value) || 0;
             }
             studentData[field] = value;
-        }
+        });
 
         const student: Student = {
             id: `imported-${Date.now()}-${rowIndex}`,
@@ -130,7 +130,7 @@ export function UploadWizard() {
     addStudents(newStudents);
     toast({ title: 'Import Complete!', description: `${newStudents.length} students have been added.`});
     router.push('/dashboard');
-  }
+  };
 
   const isMappingComplete = requiredFields.every(field => columnMapping[field] && csvData?.headers.includes(columnMapping[field]));
   
