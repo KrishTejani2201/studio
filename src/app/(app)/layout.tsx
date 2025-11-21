@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { AppHeader } from '@/components/layout/app-header';
 import { AppSidebar } from '@/components/layout/app-sidebar';
@@ -14,6 +14,21 @@ const getPageTitle = (pathname: string) => {
   if (pathname.startsWith('/settings')) return 'Settings';
   return 'EduInsights Pro';
 }
+
+function ClientOnly({ children }: { children: React.ReactNode }) {
+  const [hasMounted, setHasMounted] = useState(false);
+
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
+
+  if (!hasMounted) {
+    return null;
+  }
+
+  return <>{children}</>;
+}
+
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -29,7 +44,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <div className="flex flex-col">
           <AppHeader onMenuClick={() => setIsMobileMenuOpen(true)} pageTitle={pageTitle} />
           <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8 bg-background">
-            {children}
+            <ClientOnly>{children}</ClientOnly>
           </main>
         </div>
         <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
