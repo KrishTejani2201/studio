@@ -3,27 +3,31 @@
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from 'recharts';
 import type { Student } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { useMemo } from 'react';
 
 type RiskDistributionChartProps = {
   students: Student[];
 };
 
 export function RiskDistributionChart({ students }: RiskDistributionChartProps) {
-  const riskData = [
-    { name: 'Low Risk', count: 0, fill: 'var(--chart-1)'},
-    { name: 'Medium Risk', count: 0, fill: 'var(--chart-2)' },
-    { name: 'High Risk', count: 0, fill: 'hsl(var(--destructive))' },
-  ];
+  const riskData = useMemo(() => {
+    const data = [
+        { name: 'Low Risk', count: 0, fill: 'var(--chart-1)'},
+        { name: 'Medium Risk', count: 0, fill: 'var(--chart-2)' },
+        { name: 'High Risk', count: 0, fill: 'hsl(var(--destructive))' },
+    ];
 
-  students.forEach((student) => {
-    if (student.riskPrediction.level === 'Low') {
-      riskData[0].count++;
-    } else if (student.riskPrediction.level === 'Medium') {
-      riskData[1].count++;
-    } else {
-      riskData[2].count++;
-    }
-  });
+    students.forEach((student) => {
+        if (student.riskPrediction.level === 'Low') {
+            data[0].count++;
+        } else if (student.riskPrediction.level === 'Medium') {
+            data[1].count++;
+        } else {
+            data[2].count++;
+        }
+    });
+    return data;
+  }, [students]);
 
   return (
     <Card>

@@ -6,20 +6,28 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import type { Student } from '@/lib/types';
+import { useMemo } from 'react';
 
 type StatsCardsProps = {
   students: Student[];
 };
 
 export function StatsCards({ students }: StatsCardsProps) {
-  const totalStudents = students.length;
-  const highRiskStudents = students.filter(
-    (s) => s.riskPrediction.level === 'High'
-  ).length;
-  const averageAttendance =
-    students.reduce((acc, s) => acc + s.attendance, 0) / totalStudents;
-  const averageScore =
-    students.reduce((acc, s) => acc + s.averageScore, 0) / totalStudents;
+  const { totalStudents, highRiskStudents, averageAttendance, averageScore } = useMemo(() => {
+    const totalStudents = students.length;
+    if (totalStudents === 0) {
+      return { totalStudents: 0, highRiskStudents: 0, averageAttendance: 0, averageScore: 0 };
+    }
+    const highRiskStudents = students.filter(
+      (s) => s.riskPrediction.level === 'High'
+    ).length;
+    const averageAttendance =
+      students.reduce((acc, s) => acc + s.attendance, 0) / totalStudents;
+    const averageScore =
+      students.reduce((acc, s) => acc + s.averageScore, 0) / totalStudents;
+    
+    return { totalStudents, highRiskStudents, averageAttendance, averageScore };
+  }, [students]);
   
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -30,7 +38,7 @@ export function StatsCards({ students }: StatsCardsProps) {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{totalStudents}</div>
-          <p className="text-xs text-muted-foreground">+2 from last month</p>
+          <p className="text-xs text-muted-foreground">Currently in roster</p>
         </CardContent>
       </Card>
       <Card>
@@ -41,7 +49,7 @@ export function StatsCards({ students }: StatsCardsProps) {
         <CardContent>
           <div className="text-2xl font-bold">{highRiskStudents}</div>
           <p className="text-xs text-muted-foreground">
-            {highRiskStudents > 0 ? `${((highRiskStudents / totalStudents) * 100).toFixed(0)}% of class` : 'None'}
+            {totalStudents > 0 ? `${((highRiskStudents / totalStudents) * 100).toFixed(0)}% of class` : 'N/A'}
           </p>
         </CardContent>
       </Card>
@@ -52,7 +60,7 @@ export function StatsCards({ students }: StatsCardsProps) {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{averageAttendance.toFixed(1)}%</div>
-          <p className="text-xs text-muted-foreground">+1.2% from last month</p>
+          <p className="text-xs text-muted-foreground">Class average</p>
         </CardContent>
       </Card>
       <Card>
@@ -62,7 +70,7 @@ export function StatsCards({ students }: StatsCardsProps) {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{averageScore.toFixed(1)}</div>
-          <p className="text-xs text-muted-foreground">-0.5 points from last month</p>
+          <p className="text-xs text-muted-foreground">Class average</p>
         </CardContent>
       </Card>
     </div>

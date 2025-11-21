@@ -1,8 +1,13 @@
-import { students } from '@/lib/data';
+'use client';
+
 import { StudentsTable } from '@/components/dashboard/students-table';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { useStudents } from '@/contexts/StudentContext';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function StudentsPage() {
+  const { students, isLoading } = useStudents();
+
   return (
     <div className="space-y-6">
        <Card>
@@ -11,7 +16,11 @@ export default function StudentsPage() {
             <CardDescription>View and manage all students in your records.</CardDescription>
         </CardHeader>
         <CardContent>
-            <StudentsTable students={students} />
+            {isLoading ? (
+              <Skeleton className="h-[400px]" />
+            ) : (
+              <StudentsTable students={students} />
+            )}
         </CardContent>
       </Card>
     </div>

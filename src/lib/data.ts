@@ -1,6 +1,6 @@
 import type { Student } from './types';
 
-export const students: Student[] = [
+export const initialStudents: Student[] = [
   {
     id: '1',
     name: 'Alex Johnson',
@@ -129,5 +129,6 @@ export const students: Student[] = [
 ];
 
 export const getStudentById = (id: string): Student | undefined => {
-  return students.find(student => student.id === id);
+  // This will need to be updated to use the context-managed students array
+  return initialStudents.find(student => student.id === id);
 };

@@ -1,7 +1,7 @@
 'use client';
 
 import { Upload, Table, Check, ArrowRight, ArrowLeft } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Input } from '../ui/input';
@@ -10,6 +10,9 @@ import { Progress } from '../ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Table as UiTable, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
 import { useToast } from '@/hooks/use-toast';
+import { useStudents } from '@/contexts/StudentContext';
+import type { Student } from '@/lib/types';
+import { useRouter } from 'next/navigation';
 
 const steps = [
   { id: 1, name: 'Upload File', icon: Upload },
@@ -30,6 +33,8 @@ export function UploadWizard() {
   const [csvData, setCsvData] = useState<CsvData | null>(null);
   const [columnMapping, setColumnMapping] = useState<Record<string, string>>({});
   const { toast } = useToast();
+  const { addStudents } = useStudents();
+  const router = useRouter();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -60,37 +65,81 @@ export function UploadWizard() {
   const handleMappingChange = (field: string, csvHeader: string) => {
     setColumnMapping(prev => ({ ...prev, [field]: csvHeader }));
   };
-
-  const getPreviewData = () => {
-    if (!csvData || Object.keys(columnMapping).length === 0) return [];
+  
+  const getPreviewData = (): Partial<Student>[] => {
+    if (!csvData || !isMappingComplete) return [];
     
     const headerIndexMap: Record<string, number> = {};
     csvData.headers.forEach((header, index) => {
         headerIndexMap[header] = index;
     });
 
-    return csvData.rows.map(row => {
-        const rowData: Record<string, string> = {};
+    return csvData.rows.slice(0, 5).map(row => {
+        const rowData: Record<string, any> = {};
         for (const field of requiredFields) {
             const csvHeader = columnMapping[field];
             const index = headerIndexMap[csvHeader];
-            rowData[field] = row[index] || '';
+            let value: string | number = row[index] || '';
+            if (field === 'grade' || field === 'averageScore' || field === 'attendance') {
+                value = Number(value) || 0;
+            }
+            rowData[field] = value;
         }
         return rowData;
-    }).slice(0, 5); // show first 5 rows for preview
+    });
   };
 
-  const isMappingComplete = requiredFields.every(field => columnMapping[field]);
+  const handleImport = () => {
+    if (!csvData || !isMappingComplete) return;
+
+    const headerIndexMap: Record<string, number> = {};
+    csvData.headers.forEach((header, index) => {
+        headerIndexMap[header] = index;
+    });
+
+    const newStudents: Student[] = csvData.rows.map((row, rowIndex) => {
+        const student: Partial<Student> = {
+            id: `imported-${Date.now()}-${rowIndex}`,
+            avatarUrl: `https://i.pravatar.cc/150?u=imported_${rowIndex}`,
+            parentEmail: `parent.imported.${rowIndex}@example.com`,
+            performance: [], // Default empty values
+            riskPrediction: { // Default risk prediction
+                probability: Math.random() * 0.3,
+                level: 'Low',
+                contributingFactors: [],
+            },
+        };
+        for (const field of requiredFields) {
+            const csvHeader = columnMapping[field];
+            const index = headerIndexMap[csvHeader];
+            let value: string | number = row[index] || '';
+            if (field === 'grade' || field === 'averageScore' || field === 'attendance') {
+                value = Number(value) || 0;
+            }
+            (student as any)[field] = value;
+        }
+        return student as Student;
+    });
+
+    addStudents(newStudents);
+    toast({ title: 'Import Complete!', description: `${newStudents.length} students have been added.`});
+    router.push('/dashboard');
+  }
+
+  const isMappingComplete = requiredFields.every(field => columnMapping[field] && csvData?.headers.includes(columnMapping[field]));
   
   const progress = (currentStep / steps.length) * 100;
 
   const goToNext = () => {
-    if (currentStep === 1 && !csvData) return;
+    if (currentStep === 1 && !csvData) {
+        toast({ variant: 'destructive', title: 'No File Selected', description: 'Please select a CSV file to continue.' });
+        return;
+    }
     if (currentStep === 2 && !isMappingComplete) {
         toast({
             variant: 'destructive',
             title: 'Mapping Incomplete',
-            description: 'Please map all required fields.',
+            description: 'Please map all required fields to a valid column from your file.',
         });
         return;
     }
@@ -98,6 +147,8 @@ export function UploadWizard() {
   }
 
   const goToPrev = () => setCurrentStep(s => Math.max(1, s - 1));
+
+  const previewData = getPreviewData();
 
   return (
     <Card className="w-full max-w-4xl">
@@ -142,7 +193,7 @@ export function UploadWizard() {
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                         {requiredFields.map(field => (
                             <div key={field} className="flex items-center justify-between rounded-md border p-4">
-                                <Label htmlFor={`map-${field}`} className="font-semibold capitalize">{field.replace('averageScore', 'Average Score')}</Label>
+                                <Label htmlFor={`map-${field}`} className="font-semibold capitalize">{field.replace(/([A-Z])/g, ' $1')}</Label>
                                 <Select onValueChange={value => handleMappingChange(field, value)} value={columnMapping[field]}>
                                     <SelectTrigger id={`map-${field}`} className="w-[200px]">
                                         <SelectValue placeholder="Select column..." />
@@ -168,18 +219,24 @@ export function UploadWizard() {
                             <TableHeader>
                                 <TableRow>
                                     {requiredFields.map(field => (
-                                        <TableHead key={field} className="capitalize">{field.replace('averageScore', 'Avg. Score')}</TableHead>
+                                        <TableHead key={field} className="capitalize">{field.replace(/([A-Z])/g, ' $1')}</TableHead>
                                     ))}
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {getPreviewData().map((row, index) => (
+                                {previewData.length > 0 ? previewData.map((row, index) => (
                                     <TableRow key={index}>
                                         {requiredFields.map(field => (
-                                            <TableCell key={field}>{row[field]}</TableCell>
+                                            <TableCell key={field}>{(row as any)[field]}</TableCell>
                                         ))}
                                     </TableRow>
-                                ))}
+                                )) : (
+                                    <TableRow>
+                                        <TableCell colSpan={requiredFields.length} className="h-24 text-center">
+                                            No data to preview. Check your column mapping.
+                                        </TableCell>
+                                    </TableRow>
+                                )}
                             </TableBody>
                         </UiTable>
                     </div>
@@ -192,11 +249,11 @@ export function UploadWizard() {
                     <ArrowLeft className="mr-2" /> Back
                 </Button>
                 {currentStep < steps.length ? (
-                    <Button onClick={goToNext} disabled={(currentStep === 1 && !fileName) || (currentStep === 2 && !isMappingComplete)}>
+                    <Button onClick={goToNext} disabled={(currentStep === 1 && !fileName)}>
                         Next Step <ArrowRight className="ml-2" />
                     </Button>
                 ) : (
-                    <Button onClick={() => toast({ title: 'Import Complete!', description: 'Your data has been successfully imported.'})}>
+                    <Button onClick={handleImport} disabled={!isMappingComplete}>
                        <Check className="mr-2" /> Confirm & Import
                     </Button>
                 )}

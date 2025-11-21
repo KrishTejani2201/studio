@@ -1,15 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   ArrowUpDown,
-  ChevronDown,
 } from 'lucide-react';
 
 import type { Student } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -17,12 +15,6 @@ import {
   CardTitle,
   CardDescription
 } from '@/components/ui/card';
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import {
   Table,
@@ -45,30 +37,44 @@ const riskLevelVariant = {
 } as const;
 
 export function StudentsTable({ students: initialStudents }: StudentsTableProps) {
-  const [students, setStudents] = useState<Student[]>(initialStudents);
-  const [sort, setSort] = useState<{ key: keyof Student | null, direction: 'asc' | 'desc' }>({ key: null, direction: 'asc'});
+  const [sort, setSort] = useState<{ key: keyof Student | 'riskPrediction' | null, direction: 'asc' | 'desc' }>({ key: null, direction: 'asc'});
   const [filter, setFilter] = useState('');
   const router = useRouter();
 
-  const handleSort = (key: keyof Student) => {
-    const direction = (sort.key === key && sort.direction === 'asc') ? 'desc' : 'asc';
-    const sortedStudents = [...students].sort((a, b) => {
+  const sortedAndFilteredStudents = useMemo(() => {
+    let students = [...initialStudents];
+    
+    if (filter) {
+      students = students.filter(student => student.name.toLowerCase().includes(filter.toLowerCase()));
+    }
+
+    if (sort.key) {
+      students.sort((a, b) => {
+        const key = sort.key as keyof Student;
         if (key === 'riskPrediction') {
             const levelA = a.riskPrediction.level;
             const levelB = b.riskPrediction.level;
             const order = { 'High': 1, 'Medium': 2, 'Low': 3 };
-            return direction === 'asc' ? order[levelA] - order[levelB] : order[levelB] - order[levelA];
+            return sort.direction === 'asc' ? order[levelA] - order[levelB] : order[levelB] - order[levelA];
         }
 
-        if (a[key] < b[key]) return direction === 'asc' ? -1 : 1;
-        if (a[key] > b[key]) return direction === 'asc' ? 1 : -1;
+        const valA = a[key];
+        const valB = b[key];
+
+        if (valA < valB) return sort.direction === 'asc' ? -1 : 1;
+        if (valA > valB) return sort.direction === 'asc' ? 1 : -1;
         return 0;
-    });
-    setStudents(sortedStudents);
+      });
+    }
+    
+    return students;
+  }, [initialStudents, filter, sort]);
+
+
+  const handleSort = (key: keyof Student | 'riskPrediction') => {
+    const direction = (sort.key === key && sort.direction === 'asc') ? 'desc' : 'asc';
     setSort({ key, direction });
   }
-
-  const filteredStudents = students.filter(student => student.name.toLowerCase().includes(filter.toLowerCase()));
 
   return (
     <Card>
@@ -117,8 +123,8 @@ export function StudentsTable({ students: initialStudents }: StudentsTableProps)
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredStudents.length ? (
-                filteredStudents.map((student) => (
+              {sortedAndFilteredStudents.length ? (
+                sortedAndFilteredStudents.map((student) => (
                   <TableRow
                     key={student.id}
                     className="cursor-pointer"

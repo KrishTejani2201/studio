@@ -1,9 +1,11 @@
+'use client';
+
 import { notFound } from 'next/navigation';
-import { getStudentById } from '@/lib/data';
 import { StudentHeader } from '@/components/student/student-header';
 import { RiskAnalysis } from '@/components/student/risk-analysis';
 import { FeedbackGenerator } from '@/components/student/feedback-generator';
 import { ResourceRecommender } from '@/components/student/resource-recommender';
+import { useStudents } from '@/contexts/StudentContext';
 
 type StudentPageProps = {
   params: {
@@ -12,10 +14,17 @@ type StudentPageProps = {
 };
 
 export default function StudentPage({ params }: StudentPageProps) {
-  const student = getStudentById(params.studentId);
+  const { students } = useStudents();
+  const student = students.find(s => s.id === params.studentId);
 
   if (!student) {
-    notFound();
+    // We can't use notFound() in a client component in the same way.
+    // We can show a message or redirect.
+    return (
+        <div className="flex items-center justify-center h-full">
+            <p>Student not found.</p>
+        </div>
+    )
   }
 
   return (
